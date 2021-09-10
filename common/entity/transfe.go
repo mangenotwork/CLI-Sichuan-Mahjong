@@ -22,6 +22,16 @@ type TransfeData struct {
 	Code int // 传输code
 }
 
+func (t *TransfeData) Byte() []byte {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(t)
+	if err != nil {
+		log.Fatal("encode error:", err)
+	}
+	return buf.Bytes()
+}
+
 func NewTransfeData(cmd enum.Command, token string, data interface{}) []byte {
 	tra := &TransfeData{
 		Cmd: cmd,

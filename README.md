@@ -7,10 +7,10 @@
 - 
 
 ## 博客  基于Golang TCP 开发网络游戏 CLI四川麻将
-1. 选型与结构定义  [完成]
-2. Tcp通讯
-3. grom Mysql 存储数据
-4. 注册，登录
+1. 选型与结构定义  https://blog.csdn.net/Man_ge/article/details/120204207
+2. Tcp通讯    https://blog.csdn.net/Man_ge/article/details/120226415
+3. grom Mysql 存储数据  
+4. 注册，登录    
 5. 游戏大厅
 6. 创建房间
 7. 进入房间

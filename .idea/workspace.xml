@@ -20,16 +20,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44af33a2-6152-493e-95fe-9fa598ee914f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Client/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/tcpsrc/client.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/tcpsrc/handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/tcpsrc/tcp_service.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/entity/transfe.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/enum/cmd.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/utils/cli.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/utils/err.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/db/mysql.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/CLI-Sichuan-Mahjong.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CLI-Sichuan-Mahjong.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/Server/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/Server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/tcpsrc/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/Server/tcpsrc/client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/tcpsrc/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/Server/tcpsrc/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/tcpsrc/tcp_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/Server/tcpsrc/tcp_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/entity/transfe.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/entity/transfe.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/enum/cmd.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/enum/cmd.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/common/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/utils/cli.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/utils/cli.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/utils/err.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/utils/err.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +70,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="settings.editor.selected.configurable" value="go.autoimport" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -82,9 +88,14 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state x="689" y="448" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1631155382846">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="2418" y="149" key="SettingsEditor" timestamp="1631256437681">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2418" y="149" key="SettingsEditor/1920.0.1920.1080/0.0.1920.1040@1920.0.1920.1080" timestamp="1631256437681" />
+    <state x="2609" y="465" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1631256305303">
+      <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="689" y="448" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/1920.0.1920.1080/0.0.1920.1040@0.0.1920.1040" timestamp="1631155382846" />
+    <state x="2609" y="465" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/1920.0.1920.1080/0.0.1920.1040@1920.0.1920.1080" timestamp="1631256305303" />
   </component>
 </project>
