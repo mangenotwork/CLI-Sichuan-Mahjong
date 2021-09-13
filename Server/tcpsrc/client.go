@@ -24,14 +24,5 @@ func Out(userName string) {
 	AllClient.Delete(userName)
 }
 
-// 游戏房间列表
-var RoomList []*Room
 
-// 游戏房间
-type Room struct {
-	Id int64
-	Name string
-	User []*net.Conn
-	State int64 // 状态
-}
 

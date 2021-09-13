@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
 	"net"
+
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
 )
 
 // 重连
@@ -13,6 +14,7 @@ type TcpClient struct {
 	HawkServer *net.TCPAddr
 	StopChan   chan struct{}
 	CmdChan chan *entity.TransfeData
+	Token string
 }
 
 func (c *TcpClient) Send(b []byte) (int, error) {

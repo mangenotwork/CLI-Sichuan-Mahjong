@@ -4,15 +4,21 @@ import (
 	"bytes"
 	"encoding/gob"
 	"log"
+	"net"
 	"time"
 
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
 )
 
+// 注册gob类型
 func init(){
 	gob.Register(User{})
+	gob.Register(Room{})
+	gob.Register([]*Room{})
+	gob.Register([]*RoomShow{})
 }
 
+// 传输数据结构
 type TransfeData struct {
 	Cmd enum.Command  // 指令
 	Timestamp int64
@@ -63,4 +69,24 @@ func TransfeDataDecoder(data []byte) *TransfeData {
 type User struct {
 	Name string
 	Password string
+}
+
+// 游戏房间列表
+var RoomList = make([]*Room, 0)
+var RoomMap = make(map[int]*Room, 0)
+
+// 游戏房间
+type Room struct {
+	Id int
+	Name string
+	User []*net.Conn
+	State int // 状态
+}
+
+// 客户端的显示
+type RoomShow struct {
+	Id int
+	Name string
+	State string // 0:未开始   1:游戏中
+	Num string // 多少人
 }

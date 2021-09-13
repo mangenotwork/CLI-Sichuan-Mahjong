@@ -1,10 +1,11 @@
 package tcpsrc
 
 import (
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
 	"io"
 	"log"
 	"net"
+
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
 )
 
 // tcp

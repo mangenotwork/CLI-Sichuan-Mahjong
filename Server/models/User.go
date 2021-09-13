@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/db"
 	"log"
+
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/db"
 )
 
 

@@ -1,16 +1,16 @@
 package tcpsrc
 
 import (
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Client/game"
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Client/models"
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
-	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
 	"io"
 	"log"
 	"net"
 	"time"
-)
 
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Client/game"
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Client/models"
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
+)
 
 
 func Run(){
