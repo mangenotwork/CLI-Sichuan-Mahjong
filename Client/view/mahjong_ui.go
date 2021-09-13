@@ -1,3 +1,7 @@
+/*
+	麻将的显示， 画出来的
+
+ */
 package view
 
 import (
