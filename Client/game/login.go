@@ -236,33 +236,30 @@ func GameRoom(c *models.TcpClient,info entity.RoomInfo){
 				return
 			}
 
-			// 准备游戏
+			// TODO 准备游戏
 			if gameInput == "ok"{
 				if _, err := c.Send(entity.NewTransfeData(enum.GameReadyPacket, c.Token, info.Id)); err != nil {
 					models.RConn <- true
 					return
 				}
-				ch <- 0
 				return
 			}
 
-			// 发起聊天
+			// TODO 发起聊天
 			if gameInput == "say"{
 				if _, err := c.Send(entity.NewTransfeData(enum.GameSayPacket, c.Token, info.Id)); err != nil {
 					models.RConn <- true
 					return
 				}
-				ch <- 0
 				return
 			}
 
-			// 取消准备
+			// TODO 取消准备
 			if gameInput == "off"{
 				if _, err := c.Send(entity.NewTransfeData(enum.GameOffPacket, c.Token, info.Id)); err != nil {
 					models.RConn <- true
 					return
 				}
-				ch <- 0
 				return
 			}
 

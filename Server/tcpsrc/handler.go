@@ -206,13 +206,13 @@ func Handler(client *ClientUser, b []byte){
 		})
 
 	case enum.GameReadyPacket:
-		//准备游戏
+		// TODO 准备游戏
 
 	case enum.GameSayPacket:
-		//发起聊天
+		// TODO 发起聊天
 
 	case enum.GameOffPacket:
-		//取消准备
+		// TODO 取消准备
 
 
 			// 游戏开始
