@@ -14,7 +14,8 @@ const (
 	CreatRoomPacket Command = "CreatRoom_Packet"// 创建房间
 	InToRoomPacket Command = "InToRoom_Packet"// 进入房间
 	OutRoomPacket Command = "OutRoom_Packet"// 退出房间
-
+	ChatPacket Command = "Chat_Packet"// 聊天
+	RefreshRoomListPacket Command = "RefreshRoomList_Packet" //提醒刷新列表
 )
 
 const (

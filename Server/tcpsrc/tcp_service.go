@@ -44,7 +44,12 @@ func Run() {
 		}
 		log.Println("[连接成功]: ", conn.RemoteAddr().String(), conn)
 
-		go func(conn net.Conn){
+		clientUser := &ClientUser{
+			Conn: conn,
+			Token: "",
+		}
+
+		go func(client *ClientUser){
 			recv := make([]byte, 1024)
 			for {
 
@@ -53,20 +58,20 @@ func Run() {
 				//	log.Println("setReadDeadline failed:", err)
 				//}
 
-				n, err := conn.Read(recv)
+				n, err := client.Conn.Read(recv)
 				log.Println(n, err)
 				if err != nil{
 					if err == io.EOF {
-						log.Println(conn.RemoteAddr().String(), " 断开了连接!")
+						log.Println(client.Conn.RemoteAddr().String(), " 断开了连接!")
 						conn.Close()
 						return
 					}
 				}
 				if n > 0 && n < 1025 {
-					Handler(conn, recv[:n])
+					Handler(client, recv[:n])
 				}
 			}
-		}(conn)
+		}(clientUser)
 
 	}
 }

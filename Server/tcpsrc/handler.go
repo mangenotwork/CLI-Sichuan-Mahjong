@@ -6,25 +6,24 @@ package tcpsrc
 
 import (
 	"fmt"
-	"log"
-	"net"
-
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Server/dao"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/Server/models"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
+	"log"
+	"net"
 )
 
 // 服务逻辑
-func Handler(conn net.Conn, b []byte){
+func Handler(client *ClientUser, b []byte){
 	data := entity.TransfeDataDecoder(b)
 	log.Println(data.Cmd, data.Timestamp, data.Token, data.Data)
 
 	switch data.Cmd {
 
 	case enum.HeartPacket:
-		log.Println("收到心跳包: ", conn.RemoteAddr().String())
+		log.Println("收到心跳包: ", client.Conn.RemoteAddr().String())
 
 	case enum.LoginPacket:
 		// 登录
@@ -45,8 +44,9 @@ func Handler(conn net.Conn, b []byte){
 				t.Data = false
 				t.Message = "账号或密码错误"
 			}
-			_, _ = conn.Write(t.Byte())
-			Add(user.Name, &conn)
+			_, _ = client.Conn.Write(t.Byte())
+			client.Token = v.Name
+			Add(user.Name, &client.Conn)
 		}
 
 	case enum.RegisterPacket:
@@ -71,7 +71,7 @@ func Handler(conn net.Conn, b []byte){
 				t.Data = false
 				t.Message = "注册失败:" + err.Error()
 			}
-			_, _ = conn.Write(t.Byte())
+			_, _ = client.Conn.Write(t.Byte())
 		}
 
 	case enum.RoomListPacket:
@@ -83,15 +83,14 @@ func Handler(conn net.Conn, b []byte){
 		if j < 0 {
 			j = 0
 		}
-		if j > len(entity.RoomList) {
-			j = len(entity.RoomList)
+		if j > len(RoomList) {
+			j = len(RoomList)
 		}
-		if z > len(entity.RoomList) {
-			z = len(entity.RoomList)
+		if z > len(RoomList) {
+			z = len(RoomList)
 		}
-
 		listData := make([]*entity.RoomShow, 0)
-		for _, v := range entity.RoomList[j: z] {
+		for _, v := range RoomList[j: z] {
 			listData = append(listData, &entity.RoomShow{
 				Id: v.Id,
 				Name: v.Name,
@@ -100,27 +99,28 @@ func Handler(conn net.Conn, b []byte){
 			})
 		}
 		t := &entity.TransfeData{
-			Cmd:     enum.CreatRoomPacket,
+			Cmd:     enum.RoomListPacket,
 			Token:   "",
 			Code:    1,
 			Data:    listData,
 			Message: "获取列表成功",
 		}
 		log.Println("t = ", t)
-		_, _ = conn.Write(t.Byte())
+		_, _ = client.Conn.Write(t.Byte())
 
 	case enum.CreatRoomPacket:
 		// 创建房间
 		log.Println("创建房间", data.Data)
-		room := &entity.Room{
-			Id : len(entity.RoomList) +1,
+		room := &Room{
+			Id : len(RoomList) +1,
 			Name : data.Data.(string),
-			User : make([]*net.Conn, 0),
+			User : make([]*ClientUser, 0),
 			State : 0, // 状态 0 未开始  1 开始   2结算
 		}
-		room.User = append(room.User, &conn)
-		entity.RoomList = append(entity.RoomList, room)
-		entity.RoomMap[room.Id] = room
+		room.User = append(room.User, client)
+		RoomList = append(RoomList, room)
+		RoomMap[room.Id] = room
+
 		// 创建成功
 		t := &entity.TransfeData{
 			Cmd:     enum.CreatRoomPacket,
@@ -129,7 +129,19 @@ func Handler(conn net.Conn, b []byte){
 			Data:    true,
 			Message: "创建成功",
 		}
-		_, _ = conn.Write(t.Byte())
+		_, _ = client.Conn.Write(t.Byte())
+
+		//广播所有服务器用户更新
+		AllClient.Range(func(k interface{}, v interface{}) bool {
+			conn :=  v.(*net.Conn)
+			ref := &entity.TransfeData{
+				Cmd:     enum.RefreshRoomListPacket,
+				Code:    1,
+				Data:    true,
+			}
+			(*conn).Write(ref.Byte())
+			return true
+		})
 
 	case enum.InToRoomPacket:
 		// 进入房间
@@ -141,16 +153,33 @@ func Handler(conn net.Conn, b []byte){
 			Data:    true,
 			Message: "进入房间成功",
 		}
-		if _, ok := entity.RoomMap[data.Data.(int)]; ok {
-			entity.RoomMap[data.Data.(int)].User = append(entity.RoomMap[data.Data.(int)].User, &conn)
+		if _, ok := RoomMap[data.Data.(int)]; ok {
+			RoomMap[data.Data.(int)].User = append(RoomMap[data.Data.(int)].User, client)
+
+			RoomMap[data.Data.(int)].Chat(entity.ChatData{
+				From: "[系统]",
+				Mag: fmt.Sprintf("%s 进入了房间", client.Token),
+			})
 		}else{
 			t.Data = false
 			t.Message = "进入失败，房间ID不存在"
 		}
-		_, _ = conn.Write(t.Byte())
+		_, _ = client.Conn.Write(t.Byte())
 
 	case enum.OutRoomPacket:
 		//退出房间
+		log.Println("退出房间", data.Data)
+		if _, ok := RoomMap[data.Data.(int)]; ok {
+			for i, c := range RoomMap[data.Data.(int)].User{
+				if c == client{
+					RoomMap[data.Data.(int)].User = append(RoomMap[data.Data.(int)].User[:i], RoomMap[data.Data.(int)].User[i+1:]...)
+				}
+			}
+		}
+		RoomMap[data.Data.(int)].Chat(entity.ChatData{
+			From: "[系统]",
+			Mag: fmt.Sprintf("%s 退出了房间", client.Token),
+		})
 
 			// 准备游戏
 

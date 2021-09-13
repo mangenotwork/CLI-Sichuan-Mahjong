@@ -94,88 +94,128 @@ func Login(c *models.TcpClient) {
 
 // Home 游戏大厅
 func Home(c *models.TcpClient){
-	var pg = 1
+	var pg = 1 // 房间列表页数
+	roomStr := "" // 房间列表
+	departure := make(chan int)
+
+	// 获取房间列表
+	if _, err := c.Send(entity.NewTransfeData(enum.RoomListPacket, "", pg)); err != nil {
+		models.RConn <- true
+		return
+	}
 
 	// 指令
 	go func(c *models.TcpClient){
 		for {
-			// 获取房间列表
-			if _, err := c.Send(entity.NewTransfeData(enum.RoomListPacket, "", pg)); err != nil {
-				models.RConn <- true
+
+			select {
+			case <-departure:
 				return
-			}
-			roomList := <- c.CmdChan
-			log.Println("房间列表: ", roomList)
-			roomStr := ""
-			for _, v := range roomList.Data.([]*entity.RoomShow) {
-				roomStr = roomStr + fmt.Sprintf("ID: %d \t房间名: %s \t房间状态: %s \t房间人数: %s \n", v.Id, v.Name, v.State, v.Num)
-			}
 
-			view.HomeView(c.Token, roomStr, pg)
+			default:
+				var str string
+				fmt.Print("请输入: ")
+				fmt.Scanln(&str)
+				log.Println("输入 --> ", str)
 
-			var str string
-			fmt.Print("请输入: ")
-			fmt.Scanln(&str)
-
-			if str == "up" {
-				// 获取房间列表 - 上一页
-				pg++
-				continue
-			}
-
-			if str == "down" {
-				// 获取房间列表 - 下一页
-				pg--
-				if pg < 1 {
-					pg = 1
-				}
-				continue
-			}
-
-			if str == "add" {
-				var name string
-				fmt.Print("请输入房间名: ")
-				fmt.Scanln(&name)
-				// 创建房间
-				if _, err := c.Send(entity.NewTransfeData(enum.CreatRoomPacket, "", name)); err != nil {
-					models.RConn <- true
-					return
-				}
-				res := <- c.CmdChan
-				if res.Cmd == enum.CreatRoomPacket && res.Data.(bool) {
-					// 创建成功进入游戏房间
-					go GameRoom(c)
-					return
-				} else {
-					log.Println("创建房间失败！！！")
-					time.Sleep(2*time.Second)
+				if str == "up" {
+					// 获取房间列表 - 上一页
+					pg++
+					if _, err := c.Send(entity.NewTransfeData(enum.RoomListPacket, "", pg)); err != nil {
+						models.RConn <- true
+						return
+					}
 					continue
 				}
-			}
 
-			if str == "to" {
-				// 进入游戏房间
-				var roomId int
-				fmt.Print("请输入房间ID: ")
-				fmt.Scanln(&roomId)
-				if _, err := c.Send(entity.NewTransfeData(enum.InToRoomPacket, "", roomId)); err != nil {
-					models.RConn <- true
-					return
-				}
-				res := <- c.CmdChan
-				if res.Cmd == enum.InToRoomPacket && res.Data.(bool) {
-					// 创建成功进入游戏房间
-					go GameRoom(c)
-					return
-				} else {
-					log.Println("进入房间失败！", res.Message)
-					time.Sleep(2*time.Second)
+				if str == "down" {
+					// 获取房间列表 - 下一页
+					pg--
+					if pg < 1 {
+						pg = 1
+					}
+					if _, err := c.Send(entity.NewTransfeData(enum.RoomListPacket, "", pg)); err != nil {
+						models.RConn <- true
+						return
+					}
 					continue
 				}
+
+				if str == "add" {
+					var name string
+					fmt.Print("请输入房间名: ")
+					fmt.Scanln(&name)
+					// 创建房间
+					if _, err := c.Send(entity.NewTransfeData(enum.CreatRoomPacket, "", name)); err != nil {
+						models.RConn <- true
+						return
+					}
+				}
+
+				if str == "to" {
+					// 进入游戏房间
+					var roomId int
+					fmt.Print("请输入房间ID: ")
+					fmt.Scanln(&roomId)
+					if _, err := c.Send(entity.NewTransfeData(enum.InToRoomPacket, "", roomId)); err != nil {
+						models.RConn <- true
+						return
+					}
+				}
+
 			}
 
 		}
 	}(c)
+
+
+	for {
+		select {
+			case res := <- c.CmdChan :
+
+				// 获取房间列表
+				if res.Cmd == enum.RoomListPacket {
+					for _, v := range res.Data.([]*entity.RoomShow) {
+						roomStr = roomStr + fmt.Sprintf("ID: %d \t房间名: %s \t房间状态: %s \t房间人数: %s \n", v.Id, v.Name, v.State, v.Num)
+					}
+					view.HomeView(c.Token, roomStr, pg)
+				}
+
+				// 刷新列表
+				if res.Cmd == enum.RefreshRoomListPacket {
+					if _, err := c.Send(entity.NewTransfeData(enum.RoomListPacket, "", pg)); err != nil {
+						models.RConn <- true
+						return
+					}
+				}
+
+				// 创建房间后的应答
+				if res.Cmd == enum.CreatRoomPacket {
+					if res.Data.(bool) {
+						// 创建成功进入游戏房间
+						go GameRoom(c)
+						departure <- 0
+						return
+					} else {
+						log.Println("创建房间失败！！！")
+					}
+				}
+
+				// 进入游戏房间
+				if res.Cmd == enum.InToRoomPacket {
+					if res.Data.(bool) {
+						// 创建成功进入游戏房间
+						go GameRoom(c)
+						departure <- 0
+						return
+					} else {
+						log.Println("进入房间失败！", res.Message)
+					}
+				}
+
+
+		}
+	}
 
 }
 
@@ -184,51 +224,52 @@ func Home(c *models.TcpClient){
 func GameRoom(c *models.TcpClient){
 	gameChan := make(chan string)
 	endChan := make(chan int)
-
+	ChatMsgStr := ""
 
 	// 获取房间当前信息
-	view.GameRoomInit()
+	view.GameRoomInit(ChatMsgStr)
 
 	// 输入操作
 	go func(){
 		for{
-			select {
-
-			case <- endChan:
+			var str string
+			fmt.Scanln(&str)
+			log.Println("输入 : ", str)
+			if str == "q"{
+				if _, err := c.Send(entity.NewTransfeData(enum.OutRoomPacket, c.Token, "")); err != nil {
+					models.RConn <- true
+					return
+				}
+				endChan <- 0
 				return
-
-			default:
-				var str string
-				fmt.Scanln(&str)
-				log.Println("输入 : ", str)
-				gameChan <- str
 			}
 		}
 	}()
 
 	// 游戏逻辑
-	go func() {
-		for {
-			select {
-			case cmd := <-gameChan:
-				log.Println(cmd)
-
-				//退出房间
-				if cmd == "q"{
-					endChan <- 0
-					return
-				}
-			}
-		}
-	}()
-
-
-	for  {
+	for {
 		select {
 		case <- endChan:
-			// 退出房间
 			go Home(c)
+			close(endChan)
+			close(gameChan)
 			return
+
+		case cmd := <-gameChan:
+			//来自操作交互
+			log.Println(cmd)
+
+		case rse := <- c.CmdChan:
+			// 聊天消息
+			log.Println(rse)
+			if rse.Cmd == enum.ChatPacket {
+				ChatMsgStr = ChatMsgStr + fmt.Sprintf("%s : %s", rse.Data.(entity.ChatData).From,
+					rse.Data.(entity.ChatData).Mag)
+			}
+			view.GameRoomInit(ChatMsgStr)
+
 		}
 	}
+
+
 }

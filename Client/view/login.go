@@ -39,7 +39,7 @@ func HomeView(user, roomList string, pg int){
 }
 
 
-func GameRoomInit(){
+func GameRoomInit(chatMsg string){
 	utils.Cle()
 
 	fmt.Println(`_______________________________________________
@@ -49,7 +49,7 @@ func GameRoomInit(){
 | bbb    未准备
 
 [房间聊天]
-
+`+chatMsg+`
 
 
 ===================== 操作 ==========================
