@@ -14,6 +14,7 @@ func init(){
 	gob.Register(User{})
 	gob.Register([]*RoomShow{})
 	gob.Register(ChatData{})
+	gob.Register(RoomInfo{})
 }
 
 // 传输数据结构
@@ -81,4 +82,13 @@ type RoomShow struct {
 type ChatData struct {
 	From string // 使用token
 	Mag string // 内容
+}
+
+// 房间信息
+type RoomInfo struct {
+	Id int
+	Name string
+	State int // 0:未开始   1:游戏中
+	Num string // 多少人
+	Ready map[string]bool //房间用户准备情况
 }

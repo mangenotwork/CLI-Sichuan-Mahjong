@@ -43,6 +43,7 @@ type Room struct {
 	Name string
 	User []*ClientUser // token对应conn
 	State int // 状态
+	Ready map[string]bool //房间用户准备情况
 }
 
 // 房间里聊天

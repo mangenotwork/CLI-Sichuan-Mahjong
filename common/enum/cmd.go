@@ -16,6 +16,9 @@ const (
 	OutRoomPacket Command = "OutRoom_Packet"// 退出房间
 	ChatPacket Command = "Chat_Packet"// 聊天
 	RefreshRoomListPacket Command = "RefreshRoomList_Packet" //提醒刷新列表
+	GameReadyPacket Command = "GameReady_Packet" //准备游戏
+	GameSayPacket Command = "GameSay_Packet" //发起聊天
+	GameOffPacket Command = "GameOff_Packet" //取消准备
 )
 
 const (

@@ -2,6 +2,8 @@ package view
 
 import (
 	"fmt"
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
 )
 
@@ -39,14 +41,22 @@ func HomeView(user, roomList string, pg int){
 }
 
 
-func GameRoomInit(chatMsg string){
+func GameRoomInit(roomInfo entity.RoomInfo, chatMsg string){
 	utils.Cle()
+	readyStr := ""
+	for k,v := range roomInfo.Ready {
+		if v {
+			readyStr = readyStr + fmt.Sprintf("| %s \t已准备\n", k)
+		}else{
+			readyStr = readyStr + fmt.Sprintf("| %s \t未准备\n", k)
+		}
+
+	}
 
 	fmt.Println(`_______________________________________________
-房间ID : 1    | 房间名 : aaa    | 人数: 2/4
+房间ID : `+fmt.Sprintf("%d",roomInfo.Id)+`    | 房间名 : `+roomInfo.Name+`   | 人数: `+roomInfo.Num+`   | 状态: `+enum.StateMap[roomInfo.State]+`
 
-| aaa    未准备
-| bbb    未准备
+`+readyStr+`
 
 [房间聊天]
 `+chatMsg+`
@@ -56,6 +66,7 @@ func GameRoomInit(chatMsg string){
 - 输入 q 退出房间
 - 输入 ok 准备游戏
 - 输入 say 进行聊天
+- 输入 off 取消准备
 `)
 
 }

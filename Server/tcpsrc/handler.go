@@ -116,17 +116,29 @@ func Handler(client *ClientUser, b []byte){
 			Name : data.Data.(string),
 			User : make([]*ClientUser, 0),
 			State : 0, // 状态 0 未开始  1 开始   2结算
+			Ready: make(map[string]bool),
 		}
 		room.User = append(room.User, client)
+		room.Ready[client.Token] = false
 		RoomList = append(RoomList, room)
 		RoomMap[room.Id] = room
 
-		// 创建成功
+
+		// 房间信息
+		roomInfo := entity.RoomInfo{
+			Id : room.Id,
+			Name : room.Name,
+			State : room.State,
+			Num : fmt.Sprintf("%d /4 人", len(room.User)),
+			Ready : room.Ready,
+		}
+
+		// 创建成功返回
 		t := &entity.TransfeData{
 			Cmd:     enum.CreatRoomPacket,
 			Token:   "",
-			Code:    1,
-			Data:    true,
+			Code:    0,
+			Data: roomInfo,
 			Message: "创建成功",
 		}
 		_, _ = client.Conn.Write(t.Byte())
@@ -136,7 +148,7 @@ func Handler(client *ClientUser, b []byte){
 			conn :=  v.(*net.Conn)
 			ref := &entity.TransfeData{
 				Cmd:     enum.RefreshRoomListPacket,
-				Code:    1,
+				Code:    0,
 				Data:    true,
 			}
 			(*conn).Write(ref.Byte())
@@ -149,19 +161,31 @@ func Handler(client *ClientUser, b []byte){
 		t := &entity.TransfeData{
 			Cmd:     enum.InToRoomPacket,
 			Token:   "",
-			Code:    1,
-			Data:    true,
+			Code:    0,
 			Message: "进入房间成功",
 		}
-		if _, ok := RoomMap[data.Data.(int)]; ok {
-			RoomMap[data.Data.(int)].User = append(RoomMap[data.Data.(int)].User, client)
-
-			RoomMap[data.Data.(int)].Chat(entity.ChatData{
+		if room, ok := RoomMap[data.Data.(int)]; ok {
+			// 进入房间
+			room.User = append(room.User, client)
+			// 下发系统消息
+			room.Chat(entity.ChatData{
 				From: "[系统]",
 				Mag: fmt.Sprintf("%s 进入了房间", client.Token),
 			})
+			// 房间信息
+			roomInfo := entity.RoomInfo{
+				Id : room.Id,
+				Name : room.Name,
+				State : room.State,
+				Num : fmt.Sprintf("%d /4 人", len(room.User)),
+				Ready : room.Ready,
+			}
+			roomInfo.Ready[client.Token] = false
+			t.Data = roomInfo
+
 		}else{
-			t.Data = false
+			t.Code = 1
+			t.Data = nil
 			t.Message = "进入失败，房间ID不存在"
 		}
 		_, _ = client.Conn.Write(t.Byte())
@@ -181,7 +205,15 @@ func Handler(client *ClientUser, b []byte){
 			Mag: fmt.Sprintf("%s 退出了房间", client.Token),
 		})
 
-			// 准备游戏
+	case enum.GameReadyPacket:
+		//准备游戏
+
+	case enum.GameSayPacket:
+		//发起聊天
+
+	case enum.GameOffPacket:
+		//取消准备
+
 
 			// 游戏开始
 
