@@ -14,6 +14,7 @@ func init(){
 	gob.Register(User{})
 	gob.Register([]*RoomShow{})
 	gob.Register(ChatData{})
+	gob.Register(ChatSend{})
 	gob.Register(RoomInfo{})
 }
 
@@ -82,6 +83,12 @@ type RoomShow struct {
 type ChatData struct {
 	From string // 使用token
 	Mag string // 内容
+}
+
+// 聊天 send
+type ChatSend struct {
+	RoomId int
+	Mag string
 }
 
 // 房间信息

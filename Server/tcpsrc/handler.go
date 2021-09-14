@@ -122,7 +122,7 @@ func Handler(client *ClientUser, b []byte){
 		room.Ready[client.Token] = false
 		RoomList = append(RoomList, room)
 		RoomMap[room.Id] = room
-
+		client.NowRoom = room.Id
 
 		// 房间信息
 		roomInfo := entity.RoomInfo{
@@ -165,24 +165,30 @@ func Handler(client *ClientUser, b []byte){
 			Message: "进入房间成功",
 		}
 		if room, ok := RoomMap[data.Data.(int)]; ok {
-			// 进入房间
-			room.User = append(room.User, client)
-			// 下发系统消息
-			room.Chat(entity.ChatData{
-				From: "[系统]",
-				Mag: fmt.Sprintf("%s 进入了房间", client.Token),
-			})
-			// 房间信息
-			roomInfo := entity.RoomInfo{
-				Id : room.Id,
-				Name : room.Name,
-				State : room.State,
-				Num : fmt.Sprintf("%d /4 人", len(room.User)),
-				Ready : room.Ready,
+			if len(room.User) >= 4 {
+				t.Code = 1
+				t.Data = nil
+				t.Message = "进入失败，房间满员"
+			}else{
+				// 进入房间
+				client.NowRoom = room.Id
+				room.User = append(room.User, client)
+				room.Ready[client.Token] = false
+				// 下发系统消息
+				room.Chat(entity.ChatData{
+					From: "[系统]",
+					Mag: fmt.Sprintf("%s 进入了房间", client.Token),
+				})
+				// 房间信息
+				roomInfo := entity.RoomInfo{
+					Id : room.Id,
+					Name : room.Name,
+					State : room.State,
+					Num : fmt.Sprintf("%d /4 人", len(room.User)),
+					Ready : room.Ready,
+				}
+				t.Data = roomInfo
 			}
-			roomInfo.Ready[client.Token] = false
-			t.Data = roomInfo
-
 		}else{
 			t.Code = 1
 			t.Data = nil
@@ -190,30 +196,86 @@ func Handler(client *ClientUser, b []byte){
 		}
 		_, _ = client.Conn.Write(t.Byte())
 
+		// 广播给房间所有人更新
+		RoomMap[data.Data.(int)].SendInfo()
+
 	case enum.OutRoomPacket:
 		//退出房间
 		log.Println("退出房间", data.Data)
-		if _, ok := RoomMap[data.Data.(int)]; ok {
-			for i, c := range RoomMap[data.Data.(int)].User{
-				if c == client{
-					RoomMap[data.Data.(int)].User = append(RoomMap[data.Data.(int)].User[:i], RoomMap[data.Data.(int)].User[i+1:]...)
-				}
-			}
+		if room, ok := RoomMap[data.Data.(int)]; ok {
+			room.Out(client)
+			room.Chat(entity.ChatData{
+				From: "[系统]",
+				Mag: fmt.Sprintf("%s 退出了房间", client.Token),
+			})
+			room.SendInfo()
 		}
-		RoomMap[data.Data.(int)].Chat(entity.ChatData{
-			From: "[系统]",
-			Mag: fmt.Sprintf("%s 退出了房间", client.Token),
-		})
 
 	case enum.GameReadyPacket:
-		// TODO 准备游戏
+		// 准备游戏
+		if _, ok := RoomMap[data.Data.(int)]; !ok {
+			return
+		}
+		RoomMap[data.Data.(int)].ReadyLock.Lock()
+		RoomMap[data.Data.(int)].Ready[client.Token] = true
+		RoomMap[data.Data.(int)].ReadyLock.Unlock()
+
+		// 下发消息
+		RoomMap[data.Data.(int)].Chat(entity.ChatData{
+			From: "[系统]",
+			Mag: fmt.Sprintf("%s 准备了游戏", client.Token),
+		})
+		// 广播房间信息
+		RoomMap[data.Data.(int)].SendInfo()
+
+		// 游戏开始触发条件
+		isStart := true
+		for _,start := range RoomMap[data.Data.(int)].Ready {
+			if !start {
+				isStart = false
+			}
+		}
+		// 4名玩家都准备就下发游戏开始指令
+		if isStart && len(RoomMap[data.Data.(int)].User) == 4{
+			t := &entity.TransfeData{
+				Cmd:     enum.StartGamePacket,
+				Message: "游戏即将开始",
+			}
+			log.Println(RoomMap[data.Data.(int)].User)
+			for _, user := range RoomMap[data.Data.(int)].User {
+				user.IsStart = true
+				user.Conn.Write(t.Byte())
+			}
+		}
 
 	case enum.GameSayPacket:
-		// TODO 发起聊天
+		// 发起聊天
+		msgData := data.Data.(entity.ChatSend)
+		if _, ok := RoomMap[msgData.RoomId]; !ok {
+			return
+		}
+		// 下发消息
+		RoomMap[msgData.RoomId].Chat(entity.ChatData{
+			From: client.Token,
+			Mag: msgData.Mag,
+		})
 
 	case enum.GameOffPacket:
-		// TODO 取消准备
+		// 取消准备
+		if _, ok := RoomMap[data.Data.(int)]; !ok {
+			return
+		}
+		RoomMap[data.Data.(int)].ReadyLock.Lock()
+		RoomMap[data.Data.(int)].Ready[client.Token] = false
+		RoomMap[data.Data.(int)].ReadyLock.Unlock()
 
+		// 下发消息
+		RoomMap[data.Data.(int)].Chat(entity.ChatData{
+			From: "[系统]",
+			Mag: fmt.Sprintf("%s 取消了准备", client.Token),
+		})
+		// 广播房间信息
+		RoomMap[data.Data.(int)].SendInfo()
 
 			// 游戏开始
 

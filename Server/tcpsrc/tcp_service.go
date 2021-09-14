@@ -1,9 +1,11 @@
 package tcpsrc
 
 import (
+	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
 	"io"
 	"log"
 	"net"
+	"fmt"
 
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
 )
@@ -47,6 +49,8 @@ func Run() {
 		clientUser := &ClientUser{
 			Conn: conn,
 			Token: "",
+			NowRoom: 0,
+			IsStart: false,
 		}
 
 		go func(client *ClientUser){
@@ -63,6 +67,16 @@ func Run() {
 				if err != nil{
 					if err == io.EOF {
 						log.Println(client.Conn.RemoteAddr().String(), " 断开了连接!")
+						Out(client.Token) // 彻底退出
+						// 解放房间
+						if room, ok := RoomMap[client.NowRoom]; ok {
+							room.Out(client)
+							room.Chat(entity.ChatData{
+								From: "[系统]",
+								Mag: fmt.Sprintf("%s 退出了房间", client.Token),
+							})
+							room.SendInfo()
+						}
 						conn.Close()
 						return
 					}

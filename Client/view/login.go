@@ -5,6 +5,7 @@ import (
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/entity"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/enum"
 	"github.com/mangenotwork/CLI-Sichuan-Mahjong/common/utils"
+	"log"
 )
 
 
@@ -43,6 +44,7 @@ func HomeView(user, roomList string, pg int){
 
 func GameRoomInit(roomInfo entity.RoomInfo, chatMsg string){
 	utils.Cle()
+	log.Println("roomInfo = ", roomInfo)
 	readyStr := ""
 	for k,v := range roomInfo.Ready {
 		if v {

@@ -14,11 +14,13 @@ const (
 	CreatRoomPacket Command = "CreatRoom_Packet" // 创建房间
 	InToRoomPacket Command = "InToRoom_Packet" // 进入房间
 	OutRoomPacket Command = "OutRoom_Packet" // 退出房间
+	RoomInfoPacket Command = "RoomInfo_Packet" // 房间信息
 	ChatPacket Command = "Chat_Packet" // 聊天
 	RefreshRoomListPacket Command = "RefreshRoomList_Packet" // 提醒刷新列表
 	GameReadyPacket Command = "GameReady_Packet" // 准备游戏
 	GameSayPacket Command = "GameSay_Packet" // 发起聊天
 	GameOffPacket Command = "GameOff_Packet" // 取消准备
+	StartGamePacket Command = "StartGame_Packet" // 游戏开始指令
 )
 
 const (
