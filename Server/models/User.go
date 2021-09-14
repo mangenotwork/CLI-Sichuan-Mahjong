@@ -13,11 +13,12 @@ type User struct {
 	Password string `gorm:"column:password;size:32" json:"password"`
 }
 
-//TableNameDefault  默认获取table name
+//TableName  默认获取table name
 func (*User) TableName() string {
 	return "tbl_user"
 }
 
+//CreateTable 创建表
 func (u *User) CreateTable(){
 	if !db.MysqlDB.HasTable(u.TableName()) {
 		log.Println("CreateTable User")
